@@ -4,7 +4,9 @@
 
 Just run "npm install" to retrieve the "csvtojson" dependency. That's it
 * npm install
+
 You also need NodeJS installed. If you dont have it, you can always use brew to install it.
+
 * brew install node
 
 ## Run
