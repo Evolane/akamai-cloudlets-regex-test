@@ -1,0 +1,22 @@
+{
+  "name": "akamai-cloudlets-regex-test",
+  "version": "0.0.1",
+  "description": "Simple way to check a long list of exported cloudlet redirects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Evolane/akamai-cloudlets-regex-test.git"
+  },
+  "author": "Bram Verdonck",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Evolane/akamai-cloudlets-regex-test/issues"
+  },
+  "homepage": "https://github.com/Evolane/akamai-cloudlets-regex-test#readme",
+  "dependencies": {
+    "csvtojson": "^2.0.10"
+  }
+}
