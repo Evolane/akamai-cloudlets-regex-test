@@ -5,7 +5,7 @@
 Just run "npm install" to retrieve the "csvtojson" dependency. That's it
 * npm install
 
-You also need NodeJS installed. If you dont have it, you can always use brew to install it.
+You also need NodeJS installed. You can always use homebrew (brew) to install it on Mac. 
 
 * brew install node
 

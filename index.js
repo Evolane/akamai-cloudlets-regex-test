@@ -1,52 +1,49 @@
 const csv = require('csvtojson')
 
-const csvFilePath = process.env.CSVFILE
+const csvFile = process.env.CSVFILE
 const url = process.env.URL
 if (!url) {
     throw new Error('Specify URL using environment variable. Example: URL="https://www.google.be/some/path"')
 }
-if (!csvFilePath) {
+if (!csvFile) {
     throw new Error('Specify CSVFILE using environment variable. Example: CSVFILE="./some-exported-cloudlet-ruleset.csv"')
 }
-console.log("Checking regexes from file: " + csvFilePath + " against url: " + url)
+console.log("Checking CloudLets rules based on exported rules: " + csvFile + " against url: " + url)
 
 csv()
-.fromFile(csvFilePath)
-.then((jsonObj)=>{
+    .fromFile(csvFile)
+    .then((jsonObj)=>{
 
-/*
-    Example: 
+        /*
+            Example: 
 
-{ ruleName: 'Some fancy rule name',
-  matchURL: '',
-  scheme: '',
-  host: 'www.example.com',
-  path: '',
-  regex: '/(en|fr|nl)/some/webpage',
-  result:
-   { useIncomingQueryString: '',
-     useIncomingSchemeAndHost: '',
-     useRelativeUrl: '',
-     redirectURL: '/\\1/some-other/webpage',
-     statusCode: '302' } }
-*/
-    jsonObj.map(x => {
-        let paths = x.path.split(' ')
-        paths.map(y => {
-            let regex1 = RegExp(y, '');
-            let res = regex1.exec(url)
-            if (res && res.index > 0) {
-                console.log("Match found on: ")
-                console.log(x)
+        { ruleName: 'Some fancy rule name',
+        matchURL: '',
+        scheme: '',
+        host: 'www.example.com',
+        path: '',
+        regex: '/(en|fr|nl)/some/webpage',
+        result:
+        { useIncomingQueryString: '',
+            useIncomingSchemeAndHost: '',
+            useRelativeUrl: '',
+            redirectURL: '/\\1/some-other/webpage',
+            statusCode: '302' } }
+        */
+
+        jsonObj.map(rule => {
+            let paths = rule.path.split(' ')
+            paths.map(path => {
+                let resultOnPath = RegExp(path).exec(url)
+                if (resultOnPath && resultOnPath.index > 0) {
+                    console.log("Match found on path for rule: ", rule)
+                }
+            })
+            let resultOnRegex = RegExp(rule.regex).exec(url)
+            if (resultOnRegex && resultOnRegex.index > 0) {
+                console.log("Match found on regex for rule: ", rule)
             }
         })
-        let regex2 = RegExp(x.regex, '');
-        let res2 = regex2.exec(url)
-        if (res2 && res2.index > 0) {
-            console.log("Match found on: ")
-            console.log(x)
-        }
-    })
 })
 
  
