@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Evolane/akamai-cloudlets-regex-test#readme",
   "dependencies": {
-    "csvtojson": "^2.0.10"
+    "csvtojson": "^2.0.10",
+    "debug": "^4.1.1"
   }
 }

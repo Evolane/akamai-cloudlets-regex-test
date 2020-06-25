@@ -1,3 +1,6 @@
+const Logging = require('./logging')
+const log = new Logging('index')
+
 const csv = require('csvtojson')
 
 const csvFile = process.env.CSVFILE
@@ -8,21 +11,27 @@ if (!url) {
 if (!csvFile) {
     throw new Error('Specify CSVFILE using environment variable. Example: CSVFILE="./some-exported-cloudlet-ruleset.csv"')
 }
-console.log("Checking CloudLets rules based on exported rules: " + csvFile + " against url: " + url)
+log.info("Checking CloudLets rules based on exported rules: " + csvFile + " against url: " + url)
 
-csv()
+csv({
+    ignoreEmpty: true
+})
+    .preRawData((csvRawData)=>{
+        // Remove comments from CSV file
+        var newData=csvRawData.replace(/^\#.*$/gm,'');
+        return newData;
+    })
     .fromFile(csvFile)
     .then((jsonObj)=>{
-
         /*
             Example: 
 
         { ruleName: 'Some fancy rule name',
-        matchURL: '',
-        scheme: '',
-        host: 'www.example.com',
-        path: '',
-        regex: '/(en|fr|nl)/some/webpage',
+        matchURL?: '',
+        scheme?: '',
+        host?: 'www.example.com',
+        path?: '',
+        regex?: '/(en|fr|nl)/some/webpage',
         result:
         { useIncomingQueryString: '',
             useIncomingSchemeAndHost: '',
@@ -30,18 +39,52 @@ csv()
             redirectURL: '/\\1/some-other/webpage',
             statusCode: '302' } }
         */
-
+        let foundmultiplematches = false
         jsonObj.map(rule => {
-            let paths = rule.path.split(' ')
-            paths.map(path => {
-                let resultOnPath = RegExp(path).exec(url)
-                if (resultOnPath && resultOnPath.index > 0) {
-                    console.log("Match found on path for rule: ", rule)
-                }
-            })
+            let match = true
+            if (rule.scheme) {
+                match = match && rule.scheme.split(' ').find(scheme => {
+                    let resultOnPath = RegExp('^(' + scheme + '):').exec(url)
+                    if (resultOnPath) {
+                        log.debug("Match found on scheme for rule: ", rule)
+                        return true
+                    }
+                    return false
+                })
+            }
+            if (rule.host) {
+                match = match && rule.host.split(' ').find(host => {
+                    let resultOnPath = RegExp('^https?:\/\/' + host + '(/|$)').exec(url)
+                    if (resultOnPath) {
+                        log.debug("Match found on scheme for rule: ", rule)
+                        return true
+                    }
+                    return false
+                })
+            }
+            if (rule.matchURL && !RegExp('^' + rule.matchURL).exec(url)) {
+                log.debug("Match failed on matchURL for rule: ", rule)
+                match = false
+            }
+            if (rule.path) {
+                match = match && rule.path.split(' ').find(path => {
+                    let resultOnPath = RegExp(path).exec(url)
+                    if (resultOnPath) {
+                        log.debug("Match found on path for rule: ", rule)
+                        return true
+                    }
+                    return false
+                })
+            }
             let resultOnRegex = RegExp(rule.regex).exec(url)
-            if (resultOnRegex && resultOnRegex.index > 0) {
-                console.log("Match found on regex for rule: ", rule)
+            if (rule.regex && !resultOnRegex) {
+                log.debug("Match failed on regex for rule: ", rule)
+                match = false
+            }
+
+            if (match) {
+                foundmultiplematches ? log.error("Another match was already found, following match will be ignored: ", rule) : log.info("Match found for: ", rule)
+                foundmultiplematches = true
             }
         })
 })
